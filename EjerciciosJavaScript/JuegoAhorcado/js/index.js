@@ -17,7 +17,13 @@ document.getElementById("reiniciar").disabled = true;
 //Función para obtener la palabra segun los aciertos del usuario
 function obtenerPalabra() {
     let palabra = "";
-    
+    for (let i=0; i< palabraSecreta.length; i++){
+        if (letrasUsadas.includes(palabraSecreta[i])){
+            palabra += palabraSecreta[i];
+        } else{
+            palabra+="_ ";
+        }
+    }
     return palabra;
 }
 
@@ -46,10 +52,28 @@ function validarLetra() {
     if (letrasUsadas.includes(letra)) {
         alert("La letra ya ha sido usada");
     } else {
+        letrasUsadas.push(letra);
+        document.getElementById("letrasUsadas").textContent = letrasUsadas;
+        document.getElementById("letra").value = "";
+        if (palabraSecreta.includes(letra)){
+            document.getElementById("palabra").textContent = obtenerPalabra();
+            if (obtenerPalabra()== palabraSecreta){
+                alert("Felicitaciones, adivinaste la palabra");
+                document.getElementById("jugar").disabled = false;
+                document.getElementById("reiniciar").disabled = true;
+            }
+        }else{
+            intentosRestantes--;
+            document.getElementById("intentosRestantes").textContent = intentosRestantes;
+            if(intentosRestantes==0){
+                alert("Te has quedado sin oportunidades");
+                document.getElementById("jugar").disabled = false;
+                document.getElementById("reiniciar").disabled = true;
+            }
+        }
         
     }
 }
-
 
 
 //Agregar el evento click al los botones

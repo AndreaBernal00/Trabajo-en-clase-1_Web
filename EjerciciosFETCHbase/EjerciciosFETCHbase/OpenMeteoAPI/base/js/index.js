@@ -5,7 +5,6 @@ Consumir el endPoint de la API del clima Open-Meteo:
 - Ejemplo de petición
 https://api.open-meteo.com/v1/forecast?latitude=7.1254&longitude=-73.1198&current=temperature_2m&hourly=temperature_2m&timezone=auto&past_days=3&forecast_days=3
 
-
 Características para desarrollar: 
  - Cuando el sitio cargue se debe mostrar un gráfico con datos de prueba y la tabla sin datos
  - Cuando el usuario de click al botón buscar se debe hacer la solicitud de los datos a la API
@@ -13,67 +12,116 @@ Características para desarrollar:
  - En caso de no encontrar datos o presentar un error se debe reportar por consola"
 */
 
-let base_url = "https://api.open-meteo.com/v1/forecast?"
-let end_url = "&current=temperature_2m&hourly=temperature_2m&timezone=auto&past_days=3&forecast_days=3"
+let base_url = "https://api.open-meteo.com/v1/forecast?";
+let end_url = "&current=temperature_2m&hourly=temperature_2m&timezone=auto&past_days=3&forecast_days=3";
 
-function mapearDatos(){
-    console.log(data);
-    //document.getElementById("v_lat").innerText = datos.latitude;
-    //document.getElementById("v_long").innerText = datos.longitude;
-    //document.getElementById("v_alt").innerText = datos.elevation;
-    //document.getElementById("v_zone").innerText = datos.timezone;
-    //document.getElementById("v_temp").innerText = datos.current.temperature;
-    //document.getElementById("v_hour").innerText = datos.current.time;
+// Función para mapear los datos recibidos de la API
+function mapearDatos(data) {
+    console.log("Datos recibidos:", data);
 
+    // Verificar si los datos recibidos son válidos
+    if (!data || !data.latitude || !data.longitude || !data.current || !data.hourly) {
+        console.error("Error: Datos incompletos o inválidos recibidos de la API.");
+        return;
+    }
+
+    // Actualizar la tabla con los datos recibidos
+    document.getElementById("v_lat").innerText = data.latitude;
+    document.getElementById("v_long").innerText = data.longitude;
+    document.getElementById("v_alt").innerText = data.elevation;
+    document.getElementById("v_zone").innerText = data.timezone;
+    document.getElementById("v_temp").innerText = data.current.temperature_2m;
+    document.getElementById("v_hour").innerText = data.current.time;
+
+    // Actualizar el gráfico con los datos recibidos
+    actualizarGrafico(data.hourly.time, data.hourly.temperature_2m);
 }
 
-function cargarDatos(){
+// Función para cargar los datos desde la API
+function cargarDatos() {
     let latitude = document.getElementById("latitud").value;
     let longitude = document.getElementById("longitud").value;
 
-    let url = base_url + "latitude="+latitude+"&longitude="+longitude + end_url;
+    // Validar que se hayan ingresado valores
+    if (!latitude || !longitude) {
+        console.error("Error: Por favor, ingresa una latitud y longitud válidas.");
+        return;
+    }
+
+    let url = base_url + "latitude=" + latitude + "&longitude=" + longitude + end_url;
 
     fetch(url)
-        .then((response)=>{
-            if(!response.ok){
-                throw new Error("Error en la solicitud");
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`Error en la solicitud: ${response.status} ${response.statusText}`);
             }
-            return response.json()
+            return response.json();
         })
-        .then((data)=>{
+        .then((data) => {
+            if (!data) {
+                throw new Error("No se recibieron datos de la API.");
+            }
             mapearDatos(data);
         })
-        .catch((error)=>{
-            console.log("Error:", error)
+        .catch((error) => {
+            console.error("Error al cargar los datos:", error);
         });
+}
 
-    //console.log("Latitud", latitude);
-    //console.log("Longitud", longitude);
-};
+// Función para actualizar el gráfico con los datos recibidos
+function actualizarGrafico(labels, data) {
+    const ctx = document.getElementById('grafico');
 
-//Add listener
+    // Destruir el gráfico anterior si existe
+    if (window.myChart) {
+        window.myChart.destroy();
+    }
+
+    // Crear un nuevo gráfico
+    window.myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Temperatura (°C)',
+                data: data,
+                borderWidth: 1,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: false
+                }
+            }
+        }
+    });
+}
+
+// Agregar listener al botón "buscar_datos"
 document.getElementById("buscar_datos").addEventListener('click', cargarDatos);
 
-
-
-//Ejemplo de creación de Gráfico
+// Gráfico inicial con datos de prueba
 const ctx = document.getElementById('grafico');
-
-new Chart(ctx, {
+window.myChart = new Chart(ctx, {
     type: 'line',
     data: {
         labels: ['2025-03-02T00:00', '2025-03-02T01:00', '2025-03-02T02:00', '2025-03-02T03:00', '2025-03-02T04:00'],
         datasets: [{
-            label: 'Temperatura',
+            label: 'Temperatura (°C)',
             data: [20.3, 20.5, 20.3, 20.1, 19.9, 19.7],
-            borderWidth: 1
+            borderWidth: 1,
+            borderColor: 'rgba(75, 192, 192, 1)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
         }]
     },
     options: {
         scales: {
             y: {
-                beginAtZero: true
+                beginAtZero: false
             }
         }
     }
-  });
+});

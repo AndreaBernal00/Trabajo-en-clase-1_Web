@@ -19,7 +19,7 @@ function reloj() {
     setTimeout("reloj()",1000)
 }
 
-reloj()
-setInterval(reloj,1000)
+//reloj()
+//setInterval(reloj,1000)
 // Agregar el evento click al botón
-//document.getElementById("mostrar").addEventListener("click", reloj);
+document.getElementById("mostrar").addEventListener("click", reloj);
